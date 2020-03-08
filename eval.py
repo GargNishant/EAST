@@ -179,6 +179,7 @@ def main(argv=None):
                             os.path.basename(im_fn).split('.')[0]))
 
                     with open(res_file, 'w') as f:
+                        word_count = 1
                         for box in boxes:
                             # to avoid submitting errors
                             box = sort_poly(box.astype(np.int32))
@@ -188,6 +189,11 @@ def main(argv=None):
                                 box[0, 0], box[0, 1], box[1, 0], box[1, 1], box[2, 0], box[2, 1], box[3, 0], box[3, 1],
                             ))
                             cv2.polylines(im[:, :, ::-1], [box.astype(np.int32).reshape((-1, 1, 2))], True, color=(255, 255, 0), thickness=1)
+
+                            if not FLAGS.no_write_images:
+                                img_path = os.path.join(FLAGS.output_dir, os.path.basename(im_fn[:-4]+"_"+str(word_count)+im_fn[-4:]))
+                                cv2.imwrite(img_path, im[:, :, ::-1])
+
                 if not FLAGS.no_write_images:
                     img_path = os.path.join(FLAGS.output_dir, os.path.basename(im_fn))
                     cv2.imwrite(img_path, im[:, :, ::-1])
