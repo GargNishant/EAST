@@ -2,6 +2,7 @@
 
 ### Changes:
 + Each Word will be stored as a separate Image File.
++ Word Image will have names in squential Manner: <image_name>_<word_number>_<extension>
 + Before writing to txt file, the boxes are sorted based on xy coordinates
 
 ### Introduction
