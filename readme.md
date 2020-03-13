@@ -2,6 +2,8 @@
 
 ### Changes:
 + Each Word will be stored as a separate Image File.
++ Word Image will have names in squential Manner: <image_name>_<word_number>_<extension>
++ Before writing to txt file, the boxes are sorted based on xy coordinates
 
 ### Introduction
 This is a tensorflow re-implementation of [EAST: An Efficient and Accurate Scene Text Detector](https://arxiv.org/abs/1704.03155v2).
