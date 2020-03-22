@@ -4,7 +4,8 @@ import math
 import os
 import numpy as np
 import tensorflow as tf
-import script
+import ocr
+import segmentor
 
 import locality_aware_nms as nms_locality
 import lanms
@@ -171,26 +172,19 @@ def main(argv=None):
 
                 duration = time.time() - start_time
                 print('[timing] {}'.format(duration))
-                ##==============================================================================##
-                # save to file
-
-                #print(im_fn, FLAGS.output_dir)
-                boxes = script.save_image_coords(im_fn,FLAGS.output_dir, boxes)
+                boxes = segmentor.save_image_coords(im_fn,FLAGS.output_dir, boxes)
                 if boxes is None:
                     return
 
-                res_file = os.path.join(FLAGS.output_dir,'{}.txt'.format(os.path.basename(im_fn).split('.')[0]))
 
+                #res_file = os.path.join(FLAGS.output_dir+"_coord",'{}.txt'.format(os.path.basename(im_fn).split('.')[0]))
+                res_file = os.path.join(FLAGS.output_dir, os.path.basename(im_fn[:-4])+"_coord.txt")
                 with open(res_file, 'w') as f:
                     word_count = 1
                     for box in boxes:
-                        print(box)
-                        # to avoid submitting errors
-                        #box = sort_poly(box.astype(np.int32))
-                        #if np.linalg.norm(box[0] - box[1]) < 5 or np.linalg.norm(box[3]-box[0]) < 5:
-                        #    continue
                         f.write('{},{},{},{},{},{},{},{}\r\n'.format(box[0], box[1], box[2], box[3], box[4], box[5], box[6], box[7]))
                         cv2.polylines(im[:, :, ::-1], [np.array(box).astype(np.int32).reshape((-1, 1, 2))], True, color=(255, 255, 0), thickness=1)
+                        
                         if not FLAGS.no_write_images:
                             pts = []
                             pts.append([box[0],box[1]])
@@ -200,9 +194,17 @@ def main(argv=None):
                             rect = cv2.boundingRect(np.array(pts))
                             x,y,w,h = rect
                             cropped = im[y:y+h, x:x+w].copy()
+                            cropped = cropped[:, :, ::-1]
+
+                            text_file = os.path.join(FLAGS.output_dir,'{}.txt'.format(os.path.basename(im_fn).split('.')[0]))
 
                             img_path = os.path.join(FLAGS.output_dir, os.path.basename(im_fn[:-4]+"_"+str(word_count)+im_fn[-4:]))
-                            cv2.imwrite(img_path, cropped[:, :, ::-1])
+                            cv2.imwrite(img_path, cropped)
+
+                            with open(text_file,'a') as txt:
+                                txt.write(ocr.convert_box_ocr(cropped))
+                                txt.write(" ")
+
                             word_count += 1
 
                 if not FLAGS.no_write_images:
